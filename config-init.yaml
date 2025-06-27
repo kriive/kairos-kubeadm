@@ -1,0 +1,47 @@
+#cloud-config
+debug: true
+
+install:
+  auto: true
+
+strict: true
+stages:
+  initramfs:
+  - users:
+      kairos:
+        groups:
+          - sudo
+          - admin
+        passwd: kairos
+  - commands:
+    - ln -s /etc/kubernetes/admin.conf /run/kubeconfig
+    sysctl:
+      kernel.panic: "10"
+      kernel.panic_on_oops: "1"
+      vm.overcommit_memory: "1"
+    name: pre-kubeadm
+
+users:
+- lock_passwd: true
+  name: kairos
+  groups: ["admin"]
+  ssh_authorized_keys:
+  - github:kriive
+
+cluster:
+  cluster_token: fake_cluster_token
+  role: init
+  control_plane_host: 10.211.55.20
+  config: |
+    clusterConfiguration:
+      apiServer:
+        extraArgs:
+          - name: "enable-admission-plugins"
+            value: "NodeRestriction"
+      networking:
+        podSubnet: "10.244.0.0/16"
+        serviceSubnet: "10.96.0.0/12"
+        dnsDomain: "cluster.local"
+    initConfiguration:
+      nodeRegistration:
+        name: "controlplane"

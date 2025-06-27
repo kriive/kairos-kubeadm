@@ -1,0 +1,27 @@
+#cloud-config
+debug: true
+
+install:
+  auto: true
+
+strict: true
+stages:
+  initramfs:
+  - users:
+      kairos:
+        groups:
+          - sudo
+          - admin
+        passwd: kairos
+
+users:
+- lock_passwd: true
+  name: kairos
+  groups: ["admin"]
+  ssh_authorized_keys:
+  - github:kriive
+
+cluster:
+  cluster_token: fake_cluster_token
+  control_plane_host: 10.211.55.20
+  role: worker
